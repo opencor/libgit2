@@ -1,27 +1,37 @@
 #!/bin/sh
+#
+# Environment variables:
+#
+# SOURCE_DIR: Set to the directory of the libgit2 source (optional)
+#     If not set, it will be derived relative to this script.
 
-set -x
+set -e
 
-if [ -n "$COVERITY" ]; then
-	./script/coverity.sh
-	exit $?
-fi
+SOURCE_DIR=${SOURCE_DIR:-$( cd "$( dirname "${BASH_SOURCE[0]}" )" && dirname $( pwd ) )}
+BUILD_DIR=$(pwd)
 
-if [ "$TRAVIS_OS_NAME" = "osx" ]; then
-	export PKG_CONFIG_PATH=$(ls -d /usr/local/Cellar/{curl,zlib}/*/lib/pkgconfig | paste -s -d':' -)
+indent() { sed "s/^/    /"; }
 
-	# Set up a ramdisk for us to put our test data on to speed up tests on macOS
-	export CLAR_TMP="$HOME"/_clar_tmp
-	mkdir -p $CLAR_TMP
+echo "Source directory: ${SOURCE_DIR}"
+echo "Build directory:  ${BUILD_DIR}"
+echo ""
+echo "Operating system version:"
+uname -a 2>&1 | indent
+echo "CMake version:"
+cmake --version 2>&1 | indent
+echo "Compiler version:"
+gcc --version 2>&1 | indent
+echo ""
 
-	# 5*2M sectors aka ~5GB of space
-	device=$(hdiutil attach -nomount ram://$((5 * 2 * 1024 * 1024)))
-	newfs_hfs $device
-	mount -t hfs $device $CLAR_TMP
-fi
+echo "################################################################################"
+echo "## Configuring build environment                                              ##"
+echo "################################################################################"
 
-mkdir _build
-cd _build
-# shellcheck disable=SC2086
-cmake .. -DBUILD_EXAMPLES=ON -DENABLE_WERROR=ON -DCMAKE_INSTALL_PREFIX=../_install $OPTIONS || exit $?
-cmake --build . --target install || exit $?
+cmake ${SOURCE_DIR} -DBUILD_EXAMPLES=ON ${CMAKE_OPTIONS}
+
+echo ""
+echo "################################################################################"
+echo "## Building libgit2                                                           ##"
+echo "################################################################################"
+
+cmake --build .
