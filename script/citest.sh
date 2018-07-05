@@ -6,6 +6,8 @@ if [ -n "$SKIP_TESTS" ]; then
 	exit $?
 fi
 
+TMPDIR=${TMPDIR:-/tmp}
+
 # Configure the test environment; run them early so that we're certain
 # that they're started by the time we need them.
 
