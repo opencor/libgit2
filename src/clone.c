@@ -386,7 +386,8 @@ int git_clone(
 	git_repository **out,
 	const char *url,
 	const char *local_path,
-	const git_clone_options *_options)
+	const git_clone_options *_options,
+	int allow_non_empty_directory)
 {
 	int error = 0;
 	git_repository *repo = NULL;
@@ -403,14 +404,14 @@ int git_clone(
 	GITERR_CHECK_VERSION(&options, GIT_CLONE_OPTIONS_VERSION, "git_clone_options");
 
 	/* Only clone to a new directory or an empty directory */
-	if (git_path_exists(local_path) && !git_path_is_empty_dir(local_path)) {
+	if (git_path_exists(local_path) && !git_path_is_empty_dir(local_path) && !allow_non_empty_directory) {
 		giterr_set(GITERR_INVALID,
 			"'%s' exists and is not an empty directory", local_path);
 		return GIT_EEXISTS;
 	}
 
 	/* Only remove the root directory on failure if we create it */
-	if (git_path_exists(local_path))
+	if (git_path_exists(local_path) && !allow_non_empty_directory)
 		rmdir_flags |= GIT_RMDIR_SKIP_ROOT;
 
 	if (options.repository_cb)

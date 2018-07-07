@@ -200,7 +200,8 @@ GIT_EXTERN(int) git_clone(
 	git_repository **out,
 	const char *url,
 	const char *local_path,
-	const git_clone_options *options);
+	const git_clone_options *options,
+	int allow_non_empty_directory);
 
 /** @} */
 GIT_END_DECL
