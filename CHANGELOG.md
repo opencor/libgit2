@@ -1,3 +1,96 @@
+v0.27.7
+-------
+
+This is a bugfix release with the following changes or improvements:
+
+- Our continuous integration environment has switched from Travis and
+  AppVeyor to Azure Pipelines CI.
+
+- Fix adding worktrees for bare repositories.
+
+- Fix parsed patches not computing the old respectively new line
+  numbers correctly.
+
+- Fix parsing configuration variables which do not have a section.
+
+- Fix a zero-byte allocation when trying to detect file renames and
+  copies of a diff without any hunks.
+
+- Fix a zero-byte allocation when trying to resize or duplicate
+  vectors.
+
+- Fix return value when trying to unlock worktrees which aren't
+  locked.
+
+- Fix returning an unitialized error code when preparing a revision
+  walk without any pushed commits.
+
+- Fix return value of `git_remote_lookup` when lookup of
+  "remote.$remote.tagopt" fails.
+
+- Fix the revision walk always labelling commits as interesting due
+  to a mishandling of the commit date.
+
+- Fix the packbuilder inserting uninteresting blobs when adding a
+  tree containing references to such blobs.
+
+- Ignore unsupported authentication schemes in HTTP transport.
+
+- Improve performane of `git_remote_prune`.
+
+- Fix detection of whether `qsort_r` has a BSD or GNU function
+  signature.
+
+- Fix detection of iconv if it is provided by libc.
+
+v0.27.6
+-------
+
+This as a security release fixing the following list of issues:
+
+- The function family `git__strtol` is used to parse integers
+  from a buffer. As the functions do not take a buffer length as
+  argument, they will scan either until the end of the current
+  number or until a NUL byte is encountered. Many callers have
+  been misusing the function and called it on potentially
+  non-NUL-terminated buffers, resulting in possible out-of-bounds
+  reads. Callers have been fixed to use `git__strntol` functions
+  instead and `git__strtol` functions were removed.
+
+- The function `git__strntol64` relied on the undefined behavior
+  of signed integer overflows. While the code tried to detect
+  such overflows after they have happened, this is unspecified
+  behavior and may lead to weird behavior on uncommon platforms.
+
+- In the case where `git__strntol32` was unable to parse an
+  integer because it doesn't fit into an `int32_t`, it printed an
+  error message containing the string that is currently being
+  parsed. The code didn't truncate the string though, which
+  caused it to print the complete string until a NUL byte is
+  encountered and not only the currently parsed number. In case
+  where the string was not NUL terminated, this could have lead
+  to an out-of-bounds read.
+
+- When parsing tags, all unknown fields that appear before the
+  tag message are skipped. This skipping is done by using a plain
+  `strstr(buffer, "\n\n")` to search for the two newlines that
+  separate tag fields from tag message. As it is not possible to
+  supply a buffer length to `strstr`, this call may skip over the
+  buffer's end and thus result in an out of bounds read. As
+  `strstr` may return a pointer that is out of bounds, the
+  following computation of `buffer_end - buffer` will overflow
+  and result in an allocation of an invalid length. Note that
+  when reading objects from the object database, we make sure to
+  always NUL terminate them, making the use of `strstr` safe.
+
+- When parsing the "encoding" field of a commit, we may perform
+  an out of bounds read due to using `git__prefixcmp` instead of
+  `git__prefixncmp`. This can result in the parsed commit object
+  containing uninitialized data in both its message encoding and
+  message fields. Note that when reading objects from the object
+  database, we make sure to always NUL terminate them, making the
+  use of `strstr` safe.
+
 v0.27.5
 -------
 
