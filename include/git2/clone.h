@@ -203,7 +203,7 @@ GIT_EXTERN(int) git_clone(
 	const char *url,
 	const char *local_path,
 	const git_clone_options *options,
-	int use_existing = 0);
+	int use_existing);
 
 /** @} */
 GIT_END_DECL
