@@ -202,7 +202,8 @@ GIT_EXTERN(int) git_clone(
 	git_repository **out,
 	const char *url,
 	const char *local_path,
-	const git_clone_options *options);
+	const git_clone_options *options,
+	int use_existing = 0);
 
 /** @} */
 GIT_END_DECL
