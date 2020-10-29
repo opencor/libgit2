@@ -516,9 +516,10 @@ int git_clone(
 	git_repository **out,
 	const char *url,
 	const char *local_path,
-	const git_clone_options *_options)
+	const git_clone_options *_options,
+	int use_existing)
 {
-	return git__clone(out, url, local_path, _options, 0);
+	return git__clone(out, url, local_path, _options, use_existing);
 }
 
 int git_clone__submodule(
